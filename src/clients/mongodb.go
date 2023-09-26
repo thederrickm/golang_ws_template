@@ -39,7 +39,7 @@ func MongoDBUserCreate(creds models.Credentials) {
 		result, _ := coll.InsertOne(context.TODO(), creds)
 		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
 	} else {
-		// need to ship this back to register
+		// Need to return unauthorized; currently logs the below msg and returns 200
 		fmt.Println("Users already exists")
 	}
 }
