@@ -28,20 +28,11 @@ func MongoDBUserCreate(creds models.Credentials) {
 	}()
 	coll := client.Database(config.GoDotEnvVariable("MDB_USER_DB")).Collection(config.GoDotEnvVariable("MDB_USER_CO"))
 
-	filter := bson.D{{"username", creds.Username}}
-	var result models.Credentials
-	err = coll.FindOne(context.TODO(), filter).Decode(&result)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.Password), 8)
+	creds.Password = string(hashedPassword)
 
-	if result == (models.Credentials{}) {
-		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.Password), 8)
-		creds.Password = string(hashedPassword)
-
-		result, _ := coll.InsertOne(context.TODO(), creds)
-		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
-	} else {
-		// Need to return unauthorized; currently logs the below msg and returns 200
-		fmt.Println("Users already exists")
-	}
+	result, err := coll.InsertOne(context.TODO(), creds)
+	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
 }
 
 func MongoDBUserFind(creds models.Credentials) models.Credentials {

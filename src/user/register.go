@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"golang_ws_template/src/clients"
 	"golang_ws_template/src/models"
 	"net/http"
@@ -15,6 +16,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clients.MongoDBUserCreate(creds)
-
+	if (models.Credentials{}) == clients.MongoDBUserFind(creds) {
+		clients.MongoDBUserCreate(creds)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Println("User already exists")
+	}
 }
